@@ -3,7 +3,9 @@
 **Engineering Blueprint for Physical Security Appliance Deployment**  
 **Computer Science and Engineering Department**  
 **Thapar Institute of Engineering and Technology, Patiala**  
-**Group:** CPG-SENTRIX-2026-08 | **Date:** August 2026  
+**Group:** **CPG NO. 299** | **Date:** August 2026  
+**Mentor:** **Dr. Ashutosh Mishra**, Associate Professor, CSED, TIET Patiala  
+**Team Members:** Kartik Garg (102303478), Prashant Gagneja (102353011), Harshit Mishra (102319039), Akshay Ranveer (102303453), Mehul Perimal (102315144)  
 
 ---
 

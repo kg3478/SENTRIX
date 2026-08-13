@@ -2,9 +2,15 @@
 
 **Capstone Project CSED — Second Mentor Evaluation (August 2026)**  
 **Thapar Institute of Engineering and Technology, Patiala**  
-**Group:** CPG-SENTRIX-2026-08  
-**Students:** Kartik Garg (102303024), Samya Jain (102303031), Jaskirat Singh (102303042)  
-**Mentors:** Dr. Prateek Srivastava, Dr. Harpreet Singh  
+**Group:** **CPG NO. 299**  
+**Students:**  
+* **Kartik Garg** [COE] (102303478) — App Development & Systems Architecture  
+* **Prashant Gagneja** [COE] (102353011) — Core Machine Learning Implementation  
+* **Harshit Mishra** [EEC] (102319039) — Core Machine Learning Implementation  
+* **Akshay Ranveer** [COE] (102303453) — User Interface and Documentation  
+* **Mehul Perimal** [ENC] (102315144) — Hardware Development and Integration  
+
+**Faculty Mentor:** **Dr. Ashutosh Mishra**, Associate Professor, CSED, TIET Patiala  
 
 ---
 

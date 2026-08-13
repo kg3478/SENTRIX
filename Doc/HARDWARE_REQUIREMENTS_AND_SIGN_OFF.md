@@ -3,12 +3,14 @@
 **Computer Science and Engineering Department**  
 **Thapar Institute of Engineering and Technology, Patiala**  
 **Academic Year:** 2025–2026 (6th / 7th Semester Capstone Project)  
-**Project Title:** SENTRIX: Intelligent Edge-First Multimodal Physical Security and Threat Escalation Platform  
-**Capstone Group ID:** CPG-SENTRIX-2026-08  
+**Project Title:** SENTRIX: Intelligent Multimodal Physical Security and Threat Escalation Platform  
+**Capstone Group ID:** **CPG NO. 299**  
 **Team Members:**  
-* Kartik Garg (Roll No: 102303024) — BE Computer Engineering  
-* Samya Jain (Roll No: 102303031) — BE Computer Engineering  
-* Jaskirat Singh (Roll No: 102303042) — BE Computer Engineering  
+* **Kartik Garg** [COE] (Roll No: **102303478**) — BE Computer Engineering  
+* **Prashant Gagneja** [COE] (Roll No: **102353011**) — BE Computer Engineering  
+* **Harshit Mishra** [EEC] (Roll No: **102319039**) — BE Electronics & Computer Engineering  
+* **Akshay Ranveer** [COE] (Roll No: **102303453**) — BE Computer Engineering  
+* **Mehul Perimal** [ENC] (Roll No: **102315144**) — BE Electronics & Communication Engineering  
 
 ---
 
@@ -108,8 +110,6 @@ TOTAL SYSTEM POWER DISSIPATION:                         NORMAL: ~17W  |  PEAK AL
 ====================================================================================================
 ```
 
-*Thermal Assessment:* At an average continuous load of 17W, passive and standard low-noise chassis fans maintain CPU junction temperatures below 58°C, completely eliminating thermal throttling during prolonged 24/7 operations.
-
 ---
 
 ## 5. Technical Justification for Faculty Review
@@ -130,8 +130,8 @@ TOTAL SYSTEM POWER DISSIPATION:                         NORMAL: ~17W  |  PEAK AL
                          FACULTY MENTOR PROCUREMENT & DESIGN APPROVAL
 ====================================================================================================
 
-Project Title:   SENTRIX: Intelligent Edge-First Multimodal Physical Security Platform
-Group ID:        CPG-SENTRIX-2026-08
+Project Title:   SENTRIX: Intelligent Multimodal Physical Security Platform
+Group ID:        CPG NO. 299
 Academic Term:   Mid-Semester Evaluation (August 2026) / Academic Year 2025–2026
 
 Mentor Decision:
@@ -148,13 +148,8 @@ ________________________________________________________________________________
 Approved Equipment Budget (INR):  ₹ ________________________
 
 
-Faculty Mentor I Signature:       ___________________________    Date: ____ / ____ / 2026
-Name: Dr. Prateek Srivastava
+Faculty Mentor Signature:        ___________________________    Date: ____ / ____ / 2026
+Name: Dr. Ashutosh Mishra
 Designation: Associate Professor, CSED, TIET Patiala
-
-
-Faculty Mentor II Signature:      ___________________________    Date: ____ / ____ / 2026
-Name: Dr. Harpreet Singh
-Designation: Assistant Professor, CSED, TIET Patiala
 ====================================================================================================
 ```
