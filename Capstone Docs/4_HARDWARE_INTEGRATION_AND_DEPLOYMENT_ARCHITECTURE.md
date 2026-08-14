@@ -1,6 +1,6 @@
 # SENTRIX: Hardware Integration & Complete Electronics Architecture Blueprint
 
-**Technical Blueprint for Multimodal Edge Physical Security Appliance Deployment**  
+**Technical Blueprint for Commercial Embedded Edge Security Appliance**  
 **Computer Science and Engineering Department**  
 **Thapar Institute of Engineering and Technology, Patiala**  
 **Group:** **CPG NO. 299** | **Date:** August 2026  
@@ -12,285 +12,229 @@
 * **Akshay Ranveer** [COE] (Roll No: **102303453**) — *User Interface & Documentation*  
 * **Mehul Perimal** [ENC] (Roll No: **102315144**) — *Hardware Development & Integration*  
 
----
+## 1. Complete Electronics Block Diagram & Architectural Overview
 
-## 1. Electronics Block Diagram & Architectural Overview
+The SENTRIX edge security appliance replaces traditional PC-based inference with a deeply embedded, purpose-built architecture centered around the Raspberry Pi 5. The following architectural block diagram outlines the complete electronics hardware interface, mapping out digital, analog, and RF communication layers.
 
-The SENTRIX hardware architecture is engineered to deliver high-throughput, deterministic multi-sensor ingestion, sub-10ms neural inference, galvanic isolation for high-voltage physical actuators, and power continuity.
-
-```
-====================================================================================================
-                       SENTRIX COMPLETE ELECTRONICS & HARDWARE BLOCK DIAGRAM
-====================================================================================================
-```
-
-![SENTRIX Electronics Block Diagram](sentrix_hardware_block_diagram.jpg)
-
-```
-┌───────────────────────────┐     ┌─────────────────────────────────────────────────────────────┐
-│    1. SYSTEM OVERVIEW     │     │           3. OPTICAL INGESTION SUBSYSTEM                    │
-│ • Multi-Camera Inputs     │     │ ┌─────────────────────────┐     ┌─────────────────────────┐ │
-│ • Local Subnet (VLAN 10)  ├────►│ │ Primary 1080p USB 3.0   │     │ Secondary 1080p RTSP    │ │ │
-│ • Cloud Refinement Gateway│     │ │ Wide-Angle UVC Camera   │     │ IP Camera (IR Night Vis)│ │ │
-└─────────────┬─────────────┘     │ └────────────┬────────────┘     └────────────┬────────────┘ │
-              │                   └──────────────┼───────────────────────────────┼──────────────┘
-              │                                  │ (USB 3.0 / <2ms)              │ (RTSP / Port 554)
-              ▼                                  ▼                               ▼
-┌───────────────────────────────────────────────────────────────────────────────────────────────┐
-│                          2. MAIN CONTROLLER & EDGE COMPUTE HOST                               │
-│                   Intel NUC / Apple Silicon Host (8-Core CPU, 8GB+ RAM)                       │
-│                                                                                               │
-│  [USB 3.0 Host Controller] ◄── Ingests 30 FPS raw UVC frame matrix buffers                    │
-│  [Gigabit Ethernet RJ45]   ◄── Ingests H.264 RTSP bitstream (192.168.1.50)                    │
-│  [3.5mm / USB Audio ADC]   ◄── Ingests 16 kHz 16-bit PCM mono acoustic stream                 │
-│  [GPIO Header / USB-Relay] ──► Dispatches 5V TTL trigger to Optocoupler Relay                 │
-│  [Internal NVMe M.2 SSD]   ──► Stores AES-256-GCM encrypted evidence & SQLite WAL database    │
-└─────────────┬──────────────────────────────────┬───────────────────────────────▲──────────────┘
-              │                                  │                               │
-              │ (3.5mm PCM Audio)                │ (5V TTL Signal)               │ (12V DC Power)
-              ▼                                  ▼                               │
-┌───────────────────────────┐     ┌───────────────────────────┐     ┌────────────┴──────────────┐
-│   4. ACOUSTIC SENSING     │     │    5. THREAT ACTUATORS    │     │ 6. POWER DISTRIBUTION SYS │
-│ ┌───────────────────────┐ │     │ ┌───────────────────────┐ │     │ • 230V AC Mains Input     │
-│ │ Omnidirectional Mic   │ │     │ │ 5V Optocoupler Relay  │ │     │ • 600VA Line-Int. UPS     │
-│ │ (16 kHz, SNR >= 58dB) │ │     │ │ Module (PC817 + Diode)│ │     │ • 12V 5A Regulated SMPS   │
-│ └───────────┬───────────┘ │     │ └───────────┬───────────┘ │     │ • 5V 3A Step-Down Buck    │
-│             ▼             │     │             ▼             │     │ • Power Rails:            │
-│ ┌───────────────────────┐ │     │ ┌───────────────────────┐ │     │   - 12V Rail (Host/Siren) │
-│ │ USB/Audio ADC Codec   │ │     │ │ 12V 110dB Siren +     │ │     │   - 5V Rail (USB/Relay)   │
-│ └───────────────────────┘ │     │ │ Strobe Warning Beacon │ │     │   - 3.3V Logic Rail       │
-└───────────────────────────┘     │ └───────────────────────┘ │     └───────────────────────────┘
-                                  └───────────────────────────┘
+```text
+                                +-----------------------------------+
+                                |     12V Power Adapter (Mains)     |
+                                +-----------------+-----------------+
+                                                  |
+                               +------------------v-----------------+
+                               |          5V 5A USB-C PD            |
+                               +------------------+-----------------+
+                                                  |
+                                                  v
++------------------+           +------------------------------------+           +------------------+
+|    Camera 3      |   CSI-2   |                                    |   Ethernet|   MQTT Broker    |
+| (IMX708, 12MP)   +==========>+          Raspberry Pi 5            +==========>+  (Mosquitto) &   |
++------------------+ (15-pin)  |          (8GB LPDDR4X)             |   / WiFi  |    Dashboard     |
+                               |                                    |           +------------------+
++------------------+           |  +------------------------------+  |
+|   INMP441 I2S    | BCLK(18)  |  |  [BCM2712 Quad Cortex-A76]   |  |
+|    MEMS Mic      +---------->+  |  [TFLite INT8 Quant Engine]  |  |
++------------------+  WS(19)   |  +------------------------------+  |
+                      SD(20)   |                                    |
++------------------+           |                                    |           +------------------+
+|      BME280      | SDA(2)    |          GPIO Interface            |  GPIO 27  | Relay + Optoiso  |
+|   Env Sensor     +---------->+                                    +---------->+ (12V Siren Ctrl) |
++------------------+ SCL(3)    |                                    |           +------------------+
+                               |                                    |
++------------------+           |                                    |           +------------------+
+|    HC-SR501      |           |                                    |  GPIO 23  |  Transistor &    |
+|   PIR Sensor     +---------->+                                    +---------->+  IR LED Array    |
++------------------+ GPIO(17)  |                                    |           +------------------+
+                               +----------+-------------------+-----+
+                                          ^                   |
+                                          | I2C(1)            | 5V / 3.3V Power Distribution
+                                          v                   v
+                               +------------------------------------+
+                               |     LiFePO4 UPS Power HAT          |
+                               +------------------------------------+
 ```
 
----
+## 2. CSI-2 Camera Interface & Optical Subsystem
 
-## 2. Optical Subsystem Architecture & Camera Integration
+The visual sensory system utilizes the Raspberry Pi Camera Module 3 attached via the Mobile Industry Processor Interface (MIPI) Camera Serial Interface 2 (CSI-2).
 
-### 2.1 Dual-Tier Camera Topology & Coverage Zones
+### Physical Characteristics
+- **Connection**: 15-pin FPC ribbon cable over MIPI CSI-2.
+- **Sensor**: Sony IMX708, 12 Megapixels, back-illuminated.
+- **Resolution**: 4608 × 2592 pixels with a 120° diagonal Field of View.
+- **Autofocus**: Phase Detection Autofocus (PDAF).
 
-To minimize hardware procurement costs while eliminating blind spots, SENTRIX utilizes a **dual-tier optical configuration**:
+### Frame Acquisition & Night Vision
+The frame capture subsystem relies on the `libcamera` and `Picamera2` frameworks. Capture streams run at 1920×1080 @ 30 FPS.
+For low-light conditions, SENTRIX uses 4×850nm IR LEDs connected through a transistor switch (driven by GPIO 23) acting as an automatic night-mode illuminator.
 
+**Picamera2 Acquisition Snippet**:
+```python
+from picamera2 import Picamera2
+
+picam2 = Picamera2()
+config = picam2.create_preview_configuration(main={"size": (1920, 1080), "format": "RGB888"})
+picam2.configure(config)
+picam2.start()
+
+# Inside main inference loop:
+frame = picam2.capture_array()
+# Dispatch frame to preprocessing
 ```
-====================================================================================================
-Camera Unit       Location / Zone         Sensor & Interface      Resolution & FPS  Field of View
-====================================================================================================
-Primary Camera    Entry Foyer / Doorway   1080p Wide-Angle USB    1920x1080 @ 30fps 95° Diagonal FOV
-                  (Identity Checkpoint)   (UVC 1.5 Protocol)
-----------------------------------------------------------------------------------------------------
-Secondary Camera  Outdoor Perimeter /     1080p IP Bullet Camera  1920x1080 @ 30fps 110° Horizontal
-                  Approaching Alleyway    (RTSP over LAN / Wi-Fi) (H.264 / MJPEG)   (850nm IR LEDs)
-====================================================================================================
-```
 
-### 2.2 Optical Geometry & Pixel Density Calculations
-To achieve reliable face verification ($\ge 85\%$ True Positive Rate) and person detection ($\ge 92\%$ mAP), the camera placement satisfies the standard **Pixels-Per-Foot (PPF) / Pixels-Per-Meter (PPM)** thresholds:
-* **Detection (D-PPM):** $\ge 25$ PPM (allows YOLOv8n to locate human silhouettes up to 18 meters).
-* **Recognition (R-PPM):** $\ge 125$ PPM (allows centroid trajectory and behavior classification).
-* **Identification (I-PPM):** $\ge 250$ PPM (guarantees FaceNet / HSV spatial descriptors extract discriminatory facial feature points).
+## 3. I2S Digital Audio Subsystem (INMP441)
 
-For a $1920 \times 1080$ sensor with a $3.6\text{mm}$ focal length lens mounted at a height of $2.4\text{m}$ tilted downward at $15^\circ$, the focal entry zone provides an effective resolution of **$320\text{ PPM}$** at a distance of $2.5\text{m}$, fully satisfying the I-PPM criteria.
+The acoustic anomaly detection module captures environmental audio using the INMP441, an omnidirectional, MEMS microphone with an integrated I2S interface.
 
-### 2.3 Non-Blocking Ingestion Driver Implementation
-In standard OpenCV surveillance implementations, invoking `cv2.VideoCapture.read()` directly on the main processing thread introduces severe frame latency ($30\text{ms} - 120\text{ms}$) due to internal driver buffer locks. 
+### Physical Wiring
+- **BCLK (Bit Clock)** → GPIO18 (Pin 12)
+- **WS (Word Select)** → GPIO19 (Pin 35)
+- **SD (Serial Data)** → GPIO20 (Pin 38)
+- **L/R** → GND (Left Channel)
+- **VDD** → 3.3V, **GND** → GND
 
-Project SENTRIX eliminates this bottleneck in [`hardware/camera.py`](file:///Users/kartikgarg/Desktop/Sentrix-main/hardware/camera.py) by wrapping each camera feed in an isolated background thread:
+### Software Configuration
+Using the `sounddevice` package, data is captured via the I2S backend at 16kHz, mono, using 32-bit words (sign-extended to 24-bit precision).
 
 ```python
-class Camera:
-    """Dedicated background capture thread for zero-latency frame ingestion."""
-    def __init__(self, src=0, name="Camera"):
-        # Select OS-native capture backend for lowest driver latency
-        backend = cv2.CAP_AVFOUNDATION if sys.platform == "darwin" else cv2.CAP_DSHOW
-        self.cap = cv2.VideoCapture(src, backend)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
-        self.cap.set(cv2.CAP_PROP_FPS, 30)
-        self.grabbed, self.frame = self.cap.read()
-        self.lock = threading.Lock()
-        self.thread = threading.Thread(target=self._update, daemon=True)
-        self.thread.start()
+import sounddevice as sd
 
-    def _update(self):
-        while not self.stopped:
-            grabbed, frame = self.cap.read()
-            if grabbed:
-                with self.lock:
-                    self.frame = frame
+# Configured for 16kHz sample rate, 1 channel
+fs = 16000
+duration = 1.0  # seconds
 
-    def read(self):
-        with self.lock:
-            return self.frame.copy() if self.frame is not None else None
+def audio_callback(indata, frames, time, status):
+    # Perform pre-emphasis and DC offset removal
+    processed_audio = preprocess(indata)
+    # Feature extraction: RMS, ZCR, Mel-spectrogram
+    features = extract_features(processed_audio)
+    # Send to CNN classifier
+    classify_audio(features)
+
+stream = sd.InputStream(samplerate=fs, channels=1, callback=audio_callback)
+stream.start()
 ```
 
-*Result:* `read()` executes in **$< 0.01\text{ms}$**, eliminating video stuttering and UI hanging.
+## 4. I2C Environmental Sensing Subsystem (BME280)
 
----
+Environmental sensing (Temperature, Humidity, Pressure) provides contextual data directly into the Threat Context Index (TCI). 
 
-## 3. Acoustic Sensing & Digital Signal Processing Pipeline
+### Physical Wiring & Protocol
+- **SDA** → GPIO2 (Pin 3)
+- **SCL** → GPIO3 (Pin 5)
+- **Address**: `0x76`
+- **Bus Speed**: 400kHz (Fast Mode)
 
-### 3.1 Acoustic Transducer Specifications
-* **Transducer Type:** Omnidirectional Electret Boundary Condenser Microphone.
-* **Frequency Response:** $20\text{ Hz} - 20,000\text{ Hz}$ (flat response $\pm 2.5\text{ dB}$ across $100\text{ Hz} - 8\text{ kHz}$).
-* **Signal-to-Noise Ratio (SNR):** $\ge 58\text{ dB}$ (A-weighted @ 1 kHz).
-* **Sensitivity:** $-38\text{ dB} \pm 3\text{ dB}$ ($0\text{ dB} = 1\text{ V/Pa}$ @ 1 kHz).
+An anomalous temperature spike is interpreted as a fire or explosion risk.
 
-### 3.2 Signal Conditioning & ADC Sampling
-The audio subsystem utilizes the `sounddevice` / PortAudio framework sampling at **16,000 Hz, 16-bit PCM, single-channel mono**.
+```python
+import smbus2
+import bme280
 
-```
-  ┌──────────────────┐      ┌──────────────────┐      ┌─────────────────────────┐
-  │ Acoustic Impulse │ ───► │ Omnidirectional  │ ───► │ Low-Noise Pre-Amplifier │
-  │ (Glass / Scream) │      │ Condenser Mic    │      │ & Anti-Aliasing Filter  │
-  └──────────────────┘      └──────────────────┘      └───────────┬─────────────┘
-                                                                  │
-                                                                  ▼
-  ┌─────────────────────────────────────────────────────────────────────────────┐
-  │ 16 kHz 16-bit PCM Analog-to-Digital Converter (ADC)                         │
-  │ Ring Buffer Window: N = 16,000 samples (1.0s sliding frame)                 │
-  └──────────────────────────────────────┬──────────────────────────────────────┘
-                                         │
-                                         ▼
-  ┌─────────────────────────────────────────────────────────────────────────────┐
-  │ Vectorized DSP Feature Extraction (NumPy):                                  │
-  │ 1. RMS Amplitude:      RMS = sqrt( (1/N) * sum(x_i^2) )                     │
-  │ 2. Zero-Crossing Rate: ZCR = (1/2N) * sum( |sgn(x_i) - sgn(x_{i-1})| )      │
-  │ 3. Fast Fourier Trans: X(k) = sum_{n=0}^{N-1} x(n) * e^{-j 2 pi k n / N}   │
-  └──────────────────────────────────────┬──────────────────────────────────────┘
-                                         │
-                                         ▼
-  ┌─────────────────────────────────────────────────────────────────────────────┐
-  │ Threat Classification Heuristics:                                           │
-  │ • Glass Shatter: High ZCR (> 0.25) + High-Frequency Peak (5.5 kHz – 7.5 kHz)│
-  │ • Human Scream:  Elevated RMS (> 0.18) + Harmonic Formants (600 Hz – 2 kHz)│
-  │ • Gunshot / Pop: Extreme Transient Rise Time (< 15ms) + Broad Energy Burst  │
-  └─────────────────────────────────────────────────────────────────────────────┘
+port = 1
+address = 0x76
+bus = smbus2.SMBus(port)
+calibration_params = bme280.load_calibration_params(bus, address)
+
+def read_environment():
+    data = bme280.sample(bus, address, calibration_params)
+    return data.temperature, data.humidity, data.pressure
 ```
 
----
+## 5. PIR Motion Pre-Trigger System (HC-SR501)
 
-## 4. Physical Actuator & Galvanic Relay Isolation Circuitry
+To optimize power consumption, SENTRIX operates in a dual-state mode utilizing the HC-SR501 Passive Infrared (PIR) sensor.
 
-### 4.1 Schematic Design of the Optocoupler Relay Driver
-To prevent electrical feedback, high-voltage inductive transients, and back-EMF spikes from damaging the edge host motherboard when driving a 12V DC inductive siren coil, the control plane enforces **galvanic optical isolation**:
+### Logic & Wiring
+- **OUT** → GPIO17
+- The system defaults to a low-power, reduced-FPS mode.
+- Upon a rising edge on GPIO17, an interrupt wakes the inference engine, restoring the stream to 30FPS.
+- Onboard potentiometers allow sensitivity tuning and delay adjustment.
 
-```
-                                  +5V (Relay VCC)
-                                       │
-                                       ▼
-                       ┌───────────────────────────────┐
-                       │      PC817 OPTOCOUPLER        │
-                       │                               │
-[Host GPIO / Pin D4] ──┤ [1] Anode         [4] Collector├──────┐
- (5V TTL Trigger)      │                               │       │
-                       │                               │       ▼
-[Host Digital GND]   ──┤ [2] Cathode       [3] Emitter  ├──┐   │
-                       └───────────────────────────────┘  │   │
-                                                          │   ▼ (Base Current)
-                                                   Relay  │ ┌──────────────────┐
-                                                   GND    │ │ NPN Transistor   │
-                                                          │ │ (2N2222 / S8050) │
-                                                          │ └────────┬─────────┘
-                                                          │          │ (Collector)
-                                                          │          ▼
-                                                          │  ┌───────────────┐
-                                                          │  │ Relay Coil    │ ◄─── +12V DC
-                                                          │  │ (5VDC / 70mA) │
-                                                          │  │               │ ◄─── [1N4007 Diode]
-                                                          │  └───────┬───────┘      (Flyback Protection)
-                                                          │          │
-                                                          ▼          ▼
-                                                   =======================
-                                                   RELAY ISOLATED CONTACTS
-                                                   =======================
-                                                   [COM] ──► +12V DC Supply
-                                                   [NO]  ──► [+] 12V 110dB Piezo Siren
-                                                             [-] ──► 12V DC Ground
+## 6. Actuator & Galvanic Isolation Circuitry
+
+A high-decibel alarm (12V Siren) acts as the physical deterrent. The siren requires high current, necessitating an optically isolated relay circuit.
+
+### Wiring & Schematic
+- **GPIO27** connects to the anode of a PC817 optocoupler via a 330Ω resistor.
+- The isolated output drives a 2N2222 NPN transistor to energize the relay coil.
+- A 1N4007 flyback diode is placed across the relay coil for back-EMF protection.
+
+```text
+       RPi5                   Optocoupler (PC817)           Transistor & Relay (12V)
+                  330 Ohm
+ GPIO 27  +-------/\/\/\-------+    |  |     +--------+---------(+) 12V DC
+                               |    |  |     |        |
+                              ---   |  |   | / C      |
+                        LED   \ /   v  |   |/         |  (Relay Coil)
+                              ---      |   |\       -----
+                               |       |   | \ E     / \  1N4007
+                               |       |     |      -----
+ GND (RPi) +-------------------+    |  |     |        |
+                                             +--------+
+                                             |
+                                            ===
+                                            GND (12V Side)
 ```
 
-### 4.2 Circuit Component Bill of Materials:
-1. **Optocoupler:** Sharp PC817 (Dielectric isolation voltage: $5,000\text{ V}_{RMS}$).
-2. **Switching Transistor:** 2N2222 NPN Bipolar Junction Transistor ($V_{CEO} = 40\text{V}$, $I_C = 800\text{mA}$).
-3. **Flyback Suppression Diode:** 1N4007 ($1000\text{V}$ Peak Reverse Voltage, $1\text{A}$ forward current) connected in reverse-parallel across the relay coil to clamp inductive turn-off voltage spikes.
-4. **Physical Actuator:** 12V DC Piezoelectric security siren producing $110\text{ dB}$ Sound Pressure Level (SPL) at 1 meter distance, drawing $250\text{mA}$ continuous current.
+## 7. AI Model Deployment Pipeline
 
----
+The transition from a PC to an embedded Raspberry Pi 5 requires a streamlined deployment pipeline for real-time edge AI.
 
-## 5. Power Distribution & Electrical Architecture
+1. **Training & Export**: YOLOv8n is trained on a GPU cluster using custom weapon and person datasets. The model is exported using INT8 quantization: `model.export(format='tflite', int8=True)`.
+2. **Deployment**: The quantized TFLite model is copied to the RPi5 and served via the `tflite_runtime` package.
+3. **Inference Execution**: The Cortex-A76 quad-core processor handles INT8 operations using NEON SIMD acceleration, yielding ~25-30ms inference times.
+4. **Pipeline**: `Picamera2 frame` → `resize 640x640` → `normalize` → `interpreter.invoke()` → `parse detections` → `MQTT`.
 
-```
-====================================================================================================
-Electrical Rail     Nominal Voltage Current Capacity  Connected Hardware Modules
-====================================================================================================
-AC Mains Input      230V AC ± 10%   6A (50 Hz)        Line-Interactive 600VA / 360W UPS
-Unregulated DC Rail 12.0V DC        5.0A (60W Total)  Edge Host Mini PC, RTSP Camera IR, 110dB Siren
-Regulated DC Rail 1 5.0V DC (Buck)  3.0A (15W Total)  USB 3.0 Optical Camera, 5V Relay VCC, Audio ADC
-Logic Signal Rail   3.3V / 5V TTL   0.05A (Signal)    Host GPIO Control Lines, Optocoupler Anode
-====================================================================================================
-```
+**Inference Loop Snippet**:
+```python
+import tflite_runtime.interpreter as tflite
+import numpy as np
 
-### 5.1 Power Budget Calculation
-* **Edge Host PC (Intel Core i5 / Apple Silicon):** $12\text{W}$ (Idle) / $24\text{W}$ (Full Multimodal Hot Path Load).
-* **Primary USB Optical Camera:** $5\text{V} \times 0.35\text{A} = 1.75\text{W}$.
-* **Secondary RTSP IP Camera (with IR LEDs active):** $12\text{V} \times 0.40\text{A} = 4.80\text{W}$.
-* **Acoustic Microphone Subsystem:** $5\text{V} \times 0.05\text{A} = 0.25\text{W}$.
-* **Relay Coil & Optocoupler:** $5\text{V} \times 0.08\text{A} = 0.40\text{W}$.
-* **Physical Siren (when firing):** $12\text{V} \times 0.25\text{A} = 3.00\text{W}$.
-* **Total Continuous System Consumption:** **$21.2\text{ W}$** (Routine) / **$34.2\text{ W}$** (Peak Level 5 Alarm).
+interpreter = tflite.Interpreter(model_path="yolov8n_int8.tflite")
+interpreter.allocate_tensors()
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
-### 5.2 Battery Backup & UPS Lifecycle Management
-A standard **600VA / 360W Line-Interactive UPS** with a $12\text{V}, 7.2\text{Ah}$ sealed lead-acid (SLA) internal battery provides:
-$$\text{Runtime} = \frac{12\text{V} \times 7.2\text{Ah} \times 0.85 \text{ (Inverter Eff.)} \times 0.80 \text{ (Depth of Discharge)}}{21.2\text{W (Average Load)}} \approx 2.77\text{ Hours of Autonomous Operation}.$$
-
----
-
-## 6. Edge Compute Optimization & System Sizing
-
-```
-====================================================================================================
-Deployment Tier       Edge Host Platform             RAM & Storage     FPS Throughput  Mean Latency
-====================================================================================================
-Tier 1: Lab / Host    Apple Silicon (M-Series Mac)   8GB Unified / SSD 30.0 FPS        3.2ms
-Tier 2: Production    Intel Core i5 / N100 Mini PC   16GB DDR4 / NVMe  30.0 FPS        4.6ms
-Tier 3: Embedded SBC  NVIDIA Jetson Orin Nano (8GB)  8GB LPDDR5 / eMMC 30.0 FPS        2.8ms
-====================================================================================================
+def run_inference(frame):
+    # Resize and normalize
+    input_data = preprocess_frame(frame)
+    interpreter.set_tensor(input_details[0]['index'], input_data)
+    interpreter.invoke()
+    detections = interpreter.get_tensor(output_details[0]['index'])
+    return parse_detections(detections)
 ```
 
-### Thread Affinity & Resource Allocation Blueprint:
-* **Core 0 & Core 1 (Ingestion & Capture Plane):** Dedicated to OpenCV VideoCapture background threads and Sounddevice audio ring-buffer acquisition.
-* **Core 2 & Core 3 (Inference Plane):** Dedicated to YOLOv8-nano tensor inference (SIMD NEON / AVX2 vector extensions).
-* **Core 4 & Core 5 (Fusion & State Plane):** Dedicated to XGBoost late fusion, EMA temporal filtering, and WebSocket broadcast.
-* **Core 6 & Core 7 (Asynchronous Worker Plane):** Dedicated to `_task_worker` executing AES-256-GCM encryption, SQLite commits, and Twilio network requests.
+## 8. Real-Time MQTT Communication & Dashboard Pipeline
 
----
+All structured anomaly data is forwarded to a centralized dashboard using the MQTT protocol.
 
-## 7. Secured Local Network Topology (VLAN Isolation)
+- **Broker**: Eclipse Mosquitto (running locally or via Cloud VPS)
+- **Topics**: `sentrix/detections`, `sentrix/tci`, `sentrix/alerts`, `sentrix/sensors`, `sentrix/heartbeat`
+- **Quality of Service**: QoS Level 1 for critical alerts, QoS Level 0 for telemetry/heartbeats.
+- **Dashboard Interface**: A web application running FastAPI combined with a WebSocket bridge, pulling MQTT JSON payloads to dynamically render a live camera thumbnail, bounding boxes, TCI gauges, and sensor charts.
+- **Security**: Port 8883 is utilized for MQTT over TLS with Let's Encrypt certificates.
 
-```
-                            ┌─────────────────────────────────────────┐
-                            │    ROUTER & FIREWALL (192.168.1.1)      │
-                            └────────────────────┬────────────────────┘
-                                                 │
-                   ┌─────────────────────────────┴─────────────────────────────┐
-                   │                                                           │
-                   ▼                                                           ▼
-    ┌─────────────────────────────┐                             ┌─────────────────────────────┐
-    │     DEFAULT HOME SUBNET     │                             │   SECURITY SUBNET (VLAN 10) │
-    │        (192.168.1.0/24)     │                             │      (192.168.10.0/24)      │
-    │  • Laptops, Phones, Smart TV│                             │  • Completely Isolated      │
-    └─────────────────────────────┘                             └──────────────┬──────────────┘
-                                                                               │
-                                ┌──────────────────────────────────────────────┴──────────────────────────────┐
-                                │                                                                             │
-                                ▼                                                                             ▼
-                 ┌─────────────────────────────┐                                               ┌─────────────────────────────┐
-                 │ RTSP IP CAMERA #1           │                                               │ SENTRIX EDGE HOST           │
-                 │ IP: 192.168.10.50           │                                               │ IP: 192.168.10.10           │
-                 │ Port: 554 (RTSP Digest Auth)│                                               │ • Ingests local RTSP stream │
-                 │ Outbound Internet: BLOCKED  │                                               │ • Port 443 Outbound: TWILIO │
-                 └─────────────────────────────┘                                               └─────────────────────────────┘
-```
+## 9. Power Distribution & Electrical Architecture
 
-1. **VLAN 10 Isolation:** IP cameras are placed on an isolated Virtual LAN (VLAN 10) with zero outbound internet routing, preventing unauthorized firmware exfiltration or botnet hijacking.
-2. **Digest Authentication:** Camera RTSP streams require SHA-256 digest authentication headers.
-3. **Local Encryption at Rest:** Evidence is written to the local NVMe SSD using AES-256-GCM with keys derived via HKDF-SHA256.
+The electrical architecture requires balancing power to the RPi5 core and external analog peripherals.
+
+- **Main Power**: 5V 5A USB-C Power Delivery powers the Pi and its 3.3V/5V rails.
+- **Battery Backup**: A LiFePO4 UPS HAT sits on the 40-pin GPIO header. LiFePO4 chemistry guarantees high cycle life and safe thermal profiles. Battery telemetry is read over I2C.
+- **Actuator Power**: The relay and siren are fed from a separate, isolated 12V adapter.
+
+| Component | Voltage | Max Current | Average Power |
+| :--- | :--- | :--- | :--- |
+| Raspberry Pi 5 Core | 5V | 3.0A | ~5-7W |
+| RPi Camera Module 3 | 3.3V | 0.3A | ~1.0W |
+| Sensors & Audio | 3.3V | 0.1A | ~0.3W |
+| IR LEDs (Active) | 5V | 0.5A | ~2.5W |
+| 12V Siren (Active) | 12V | 1.5A | 18W (Separate) |
+
+## 10. Physical Mounting & IP65 Deployment
+
+For industrial and commercial adoption, SENTRIX requires robust environmental protection.
+
+- **Enclosure**: IP65-rated ABS enclosure. Features a dedicated camera lens port and sealed cable glands.
+- **Thermal Management**: An internal 5V PWM fan is attached to the RPi GPIO and regulated automatically by the RPi thermal daemon to prevent CPU throttling.
+- **Field Deployment**: Designed to be mounted at a 2.5m height with a 15° downward tilt. Power is optimally delivered via a PoE-to-USB-C splitter combined with the isolated 12V mains for the siren.
