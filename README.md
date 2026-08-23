@@ -78,49 +78,54 @@ Sentrix/
 ├── backend/                       # Python FastAPI backend & AI inference core
 │   ├── ai/                        # Vision, Audio, Behaviour, Face, Cloud & Fusion engines
 │   ├── core/                      # Orchestrator, TCI state, AES-256 evidence vault
-│   ├── db/                        # SQLite WAL models & event repositories
-│   ├── hardware/                  # Camera auto-discovery, microphone ingestion, sensor drivers
-│   ├── models/                    # Production neural weights (.pt, .json)
-│   ├── runtime/                   # Local evidence vault & SQLite database
-│   ├── web/                       # FastAPI routes & /ws/threat WebSocket telemetry
-│   └── app.py                     # Main application entry point
+│   ├── db/                        # SQLite WAL database models & event repositories
+│   ├── hardware/                  # Camera auto-discovery, microphone ingestion, siren drivers
+│   ├── models/                    # Production neural weights (.pt, .json, vosk-model)
+│   ├── runtime/                   # Local evidence vault & SQLite database (sentrix.db)
+│   ├── web/                       # FastAPI REST endpoints & /ws/threat WebSocket route
+│   └── app.py                     # Main backend server entry point
 │
 ├── frontend/                      # Glassmorphic Real-Time Command Console
-│   ├── index.html                 # 1080p video canvas, SVG TCI dial & controls
-│   ├── styles.css                 # Dark glassmorphic design system
-│   └── app.js                     # 30Hz WebSocket client, audio visualizer, dispatch modals
+│   ├── index.html                 # 1080p video canvas, SVG TCI dial & emergency HUD
+│   ├── styles.css                 # Dark glassmorphic stylesheet
+│   └── app.js                     # 30Hz WebSocket telemetry client & audio visualizer
 │
 ├── Capstone Docs/                 # Official Mid-Semester Submissions & Deliverables
-│   ├── Mid_Sem/                   # Packaged Submissions & Presentation Assets
-│   │   ├── CPG299-2026.docx       # Official Mid-Semester Report (Word)
-│   │   ├── CPG299-2026.pdf        # Official Mid-Semester Report (PDF)
-│   │   ├── SENTRIX_CAPSTONE_POSTER.pdf # High-visibility print-ready poster (300 DPI)
-│   │   └── SENTRIX_CAPSTONE_POSTER.png # High-resolution poster image preview
-│   ├── SENTRIX_MID_SEMESTER_REPORT.md   # Master full report source (Chapters 1–5)
+│   ├── Initial Proposal/          # Evaluated initial Capstone project proposals
+│   ├── Mid_Sem/                   # Official Evaluated Deliverables & Presentation Assets
+│   │   ├── CPG299-2026.docx       # Official Mid-Semester Report (Word Document)
+│   │   ├── CPG299-2026.pdf        # Official Mid-Semester Report (PDF Document)
+│   │   ├── SENTRIX_CAPSTONE_POSTER.pdf # High-visibility vector presentation poster
+│   │   └── SENTRIX_CAPSTONE_POSTER.png # High-resolution 300 DPI poster image
+│   ├── Reference_for_mid_sem/     # IEEE referencing guide & TIET template specifications
+│   ├── SENTRIX_MID_SEMESTER_REPORT.md   # Master full report markdown source
 │   └── tiet_logo.png                    # Official college emblem
 │
-├── training/                      # Fast-track training pipelines & datasets
-│   ├── scripts/                   # Model training and validation scripts
-│   └── runs/                      # Checkpoints, confusion matrices, and loss curves
+├── training/                      # Deep learning training pipelines & benchmarks
+│   ├── scripts/                   # Model training, evaluation & late-fusion fitting scripts
+│   └── runs/                      # Training loss curves, confusion matrices & weights
 │
-├── data/                          # Annotated datasets
+├── data/                          # Dataset directory (Excluded via .gitignore)
 │   ├── weapon_data/               # Handgun, knife, long gun datasets (9,472 items)
 │   ├── fire_smoke_data/           # 10,000+ annotated combustion frames
 │   ├── violence_data/             # 19,610 fight vs non-fight video frames
 │   ├── anomaly_data/              # Surveillance anomaly frames
 │   └── audio_data/                # Acoustic threat WAV audio samples
 │
-├── docs/                          # Master technical specifications & runbooks
+├── docs/                          # Master technical specifications & architecture diagrams
 │   ├── 1_SYSTEM_ARCHITECTURE.md
 │   ├── 2_MODEL_BENCHMARKS_AND_KPIS.md
 │   ├── 3_HARDWARE_SPECIFICATION_AND_BOM.md
 │   ├── 4_DEPLOYMENT_AND_RUNBOOK.md
-│   └── 5_FUTURE_ADVANCEMENTS_AND_CLOUD_DEPLOYMENT.md
+│   ├── 5_FUTURE_ADVANCEMENTS_AND_CLOUD_DEPLOYMENT.md
+│   └── sentrix_architecture_diagram.jpg
 │
+├── .env.example                   # Environment configuration template
+├── .gitignore                     # Git exclusion rules
+├── requirements.txt               # Python package dependencies
 ├── run.sh                         # Unified startup script (macOS / Linux)
 ├── run.bat                        # Unified startup script (Windows)
-├── requirements.txt               # Python package dependencies
-└── README.md                      # Project master readme
+└── README.md                      # Master project README
 ```
 
 ---
