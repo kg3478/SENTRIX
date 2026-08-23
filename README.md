@@ -91,10 +91,12 @@ Sentrix/
 │   └── app.js                     # 30Hz WebSocket client, audio visualizer, dispatch modals
 │
 ├── Capstone Docs/                 # Official Mid-Semester Submissions & Deliverables
-│   ├── Mid_Sem/                   # Packaged Submissions (CPG299-2026.docx & .pdf)
+│   ├── Mid_Sem/                   # Packaged Submissions & Presentation Assets
+│   │   ├── CPG299-2026.docx       # Official Mid-Semester Report (Word)
+│   │   ├── CPG299-2026.pdf        # Official Mid-Semester Report (PDF)
+│   │   ├── SENTRIX_CAPSTONE_POSTER.pdf # High-visibility print-ready poster (300 DPI)
+│   │   └── SENTRIX_CAPSTONE_POSTER.png # High-resolution poster image preview
 │   ├── SENTRIX_MID_SEMESTER_REPORT.md   # Master full report source (Chapters 1–5)
-│   ├── SENTRIX_CAPSTONE_POSTER.pdf      # High-visibility print-ready poster (300 DPI)
-│   ├── SENTRIX_CAPSTONE_POSTER.png      # High-resolution poster image preview
 │   └── tiet_logo.png                    # Official college emblem
 │
 ├── training/                      # Fast-track training pipelines & datasets
